@@ -1,0 +1,14 @@
+{
+  "ExcludeFolders": [
+    "node_modules",
+    ".git",
+    ".temp",
+    ".brain",
+    ".cursor/plans",
+    "dist"
+  ],
+  "ExcludeFiles": [
+    "tsconfig.tsbuildinfo",
+    ".env"
+  ]
+}

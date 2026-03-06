@@ -1,0 +1,92 @@
+---
+description: Структура проекта, пути, интеграции, карта команд и правил
+alwaysApply: true
+---
+
+# Project Setup
+
+Единое правило проекта. Todoist/журналы — @tracker, логирование ошибок — @error-journal.
+
+---
+
+## Структура проекта
+
+```
+<корень>/
+├── .brain/           ← Brain MCP (НЕ трогать)
+│   └── config.json
+├── .tracker/         ← Трекинг
+│   ├── config.json   ← Todoist projectId
+│   ├── journal.md    ← общий журнал (вся история по дням)
+│   ├── journals/     ← template.md (шаблон + категории с иконками)
+│   └── errors.md     ← реестр багов
+├── .cursor/
+│   ├── rules/
+│   ├── commands/
+│   └── templates/
+├── scripts/
+├── backup.config.json
+└── ...
+```
+
+---
+
+## Ключевые пути
+
+| Путь | Назначение |
+|------|------------|
+| `.tracker/config.json` | Todoist: projectId, projectName |
+| `.tracker/journal.md` | Общий журнал: вся история по дням (## YYYY-MM-DD). Отчёты для ПМа генерируются отсюда при /report. |
+| `.tracker/journals/template.md` | Шаблон записи и категории с иконками. |
+| `.tracker/errors.md` | Реестр багов (severity, гипотезы, исправления) |
+| `.brain/config.json` | Brain MCP (не менять) |
+| `backup.config.json` | Исключения из архива |
+
+---
+
+## Карта команд
+
+| Триггер | Действие | Детали |
+|---------|----------|--------|
+| что на сегодня, план на день, таски | Todoist: задачи на сегодня | @tracker |
+| задача: [название], покажи задачу | Контекст задачи из Todoist (описание + подзадачи + комментарии) | @tracker |
+| давай [задачу], сделай, берём | Контекст → план → одобрение → работа → запись | @tracker |
+| /report, отчёт, журнал на сегодня, что скинуть ПМу | Отчёт дня для Telegram (из journal.md + Todoist) | .cursor/commands/report.md |
+| /journal, /журнал, /прогресс | Запись в журнал (категория, Todoist, batch) | .cursor/commands/journal.md |
+| что нового, обновления от пма | find-activity (фильтр по userId) | @tracker |
+| все задачи, обзор проекта | get-overview с деревом подзадач | @tracker |
+| backup, бэкап, архивируй | scripts/backup.ps1 | .cursor/commands/backup.md |
+| добавь в errors.md, залогируй ошибку | Запись в .tracker/errors.md (severity, гипотезы, время через консоль) | @error-journal |
+
+---
+
+## Настройка таск-трекинга (один раз на проект)
+
+**Триггер:** "настрой таск-трекинг"
+
+**Pipeline:**
+```
+1. Проверить: существует .tracker/?
+   → Нет: создать .tracker/, config.json, journal.md, errors.md
+   → Да: продолжить
+
+2. Прочитать .tracker/config.json
+   → projectId уже заполнен? "Todoist уже привязан: [projectName]. Перепривязать?"
+
+3. find-projects → показать список
+   → 0 проектов: "Нет проектов в Todoist. Создать новый?"
+     → Если да: add-projects(name=...) → сохранить ID
+   → N проектов: показать с номерами → "Какой привязать?"
+
+4. Сохранить config.json:
+   { "todoist": { "projectId": "ID", "projectName": "Имя" } }
+
+5. Подтвердить: "✅ Todoist привязан: [Имя]. Готово."
+```
+
+---
+
+## Backup
+
+Триггеры: «backup», «сделай бэкап», «архивируй проект».
+Выполнить `scripts\backup.ps1`, вывести отчёт. Архив: `.temp/backup/project-yyyy-MM-dd-HH-mm.rar`.

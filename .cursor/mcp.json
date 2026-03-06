@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "project-brain": {
+      "url": "http://149.33.14.250/mcp",
+      "headers": {
+        "Authorization": "Bearer pb_5bed111864e34da787e3b38d7a3de016",
+        "X-Default-Project": "videomax-new"
+      }
+    }
+  }
+}
